@@ -23,10 +23,22 @@ class DirectorioController extends Controller
         return $directorios;
     }
 
+    private function cargarArchivo($file){
+        $nombreArchivo = time() . "." . $file->getClientOriginalExtension();
+        $file->move(public_path( 'fotografias' ), $nombreArchivo);
+        
+        return $nombreArchivo;
+    }
+
     //POST insertar datos
     public function store(CreateDirectorioRequest $request)
     {
+        // dd($request);
         $input = $request->all();
+        if ($request->has('foto')) {
+            $input['foto'] = $this->cargarArchivo($request->foto);
+        }
+
         Directorio::create($input);
         return response()->json([
             'res' => true,
@@ -43,7 +55,12 @@ class DirectorioController extends Controller
     //PUT actualizar registros
     public function update(UpdateDirectorioRequest $request, Directorio $directorio)
     {
+        
         $input = $request->all();
+        if ($request->has('foto')) {
+            $input['foto'] = $this->cargarArchivo($request->foto);
+        }
+
         $directorio->update($input);
 
         return response()->json([
@@ -52,14 +69,14 @@ class DirectorioController extends Controller
         ], 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+    //DELETE eliminar registros
     public function destroy($id)
     {
-        //
+        Directorio::destroy($id);
+
+        return response()->json([
+            'res' => true,
+            'message' => 'Registro eliminado correctamente'
+        ], 200);
     }
 }
